@@ -1,0 +1,3 @@
+[submodule "p3/github"]
+	path = p3/github
+	url = git@github.com:PfClaKr/ychun_iot_chaehun.git
