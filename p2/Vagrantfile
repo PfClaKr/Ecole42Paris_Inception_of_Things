@@ -8,7 +8,7 @@ Vagrant.configure("2") do |config|
       vb.cpus = 1
       vb.name = "ychunS"
     end
-    config.vm.provision "shell", inline: <<-SHELL
+    server.vm.provision "shell", inline: <<-SHELL
       curl -sfL https://get.k3s.io | sh -s - --node-ip=192.168.56.110
       sudo chmod 644 /etc/rancher/k3s/k3s.yaml
       echo "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml" >> /home/vagrant/.bashrc
@@ -162,7 +162,7 @@ spec:
         ports:
         - containerPort: 8080
 EOF
-      sleep 30
+      kubectl wait --for=condition=Ready node/ychunS --timeout=300s
       kubectl apply -f /home/vagrant/ingress.yaml
     SHELL
   end
