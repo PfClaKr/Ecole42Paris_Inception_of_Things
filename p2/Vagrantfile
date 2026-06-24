@@ -1,6 +1,6 @@
 Vagrant.configure("2") do |config|
   config.vm.define "ychunS" do |server|
-    server.vm.box = "generic/ubuntu1804"
+    server.vm.box = "generic/ubuntu2204"
     server.vm.hostname = "ychunS"
     server.vm.network "private_network", ip: "192.168.56.110"
     server.vm.provider "virtualbox" do |vb|
@@ -8,11 +8,7 @@ Vagrant.configure("2") do |config|
       vb.cpus = 1
       vb.name = "ychunS"
     end
-    server.vm.provider "libvirt" do |lv|
-      lv.memory = 1024
-      lv.cpus = 1
-    end
-    config.vm.provision "shell", inline: <<-SHELL
+    server.vm.provision "shell", inline: <<-SHELL
       curl -sfL https://get.k3s.io | sh -s - --node-ip=192.168.56.110
       sudo chmod 644 /etc/rancher/k3s/k3s.yaml
       echo "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml" >> /home/vagrant/.bashrc
@@ -22,11 +18,6 @@ kind: Ingress
 metadata:
   name: app-ingress
 spec:
-  defaultBackend:
-    service:
-      name: app3
-      port:
-        number: 80
   rules:
   - host: app1.com
     http:
@@ -59,14 +50,14 @@ spec:
             port:
               number: 80
   - http:
-    paths:
-    - path: /
-      pathType: Prefix
-      backend:
-        service:
-          name: app3
-          port:
-            number: 80
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app3
+            port:
+              number: 80
 ---
 
 apiVersion: v1
@@ -171,7 +162,7 @@ spec:
         ports:
         - containerPort: 8080
 EOF
-      sleep 30
+      kubectl wait --for=condition=Ready node/ychunS --timeout=300s
       kubectl apply -f /home/vagrant/ingress.yaml
     SHELL
   end
