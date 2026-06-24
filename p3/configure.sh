@@ -25,6 +25,14 @@ EOF
 	sudo apt update -y
 	sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 	sudo systemctl enable --now docker
+	if id -nG | grep -q "docker"; then 
+		echo "User is in docker group"
+	else
+		sudo usermod -aG docker $USER
+		echo "User add to docker group, please re run this script. restarting in 3 sec ..."
+		sleep 3
+		systemctl reboot
+	fi
 	docker --version
 
 fi
@@ -61,3 +69,16 @@ kubectl create namespace dev
 echo "6. Installing argocd"
 kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
+kubectl rollout status deployment/argocd-server -n argocd --timeout=300s
+
+kubectl apply -f argocd.yaml
+
+# 7. Open the port with port-forwarding
+echo "7. Open the port"
+kubectl port-forward -n argocd svc/argocd-server 9090:443 >/dev/null 2>&1 &
+sleep 2
+
+# 8. Get the password argocd. Id will be admin
+echo "8. Argocd password"
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+echo

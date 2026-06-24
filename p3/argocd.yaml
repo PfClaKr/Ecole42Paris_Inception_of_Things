@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/pfclakr/ychun_iot_chaehun.git
     targetRevision: HEAD
-    path: manifests
+    path: .
   destination:
     server: https://kubernetes.default.svc
     namespace: dev
